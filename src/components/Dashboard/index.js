@@ -4,6 +4,7 @@ import VerifiedUserOutlined from '@material-ui/icons/VerifiedUserOutlined'
 import withStyles from '@material-ui/core/styles/withStyles'
 import firebase from '../firebase'
 import { withRouter } from 'react-router-dom'
+import Snackbar from "@material-ui/core/Snackbar";
 
 const styles = theme => ({
 	main: {
@@ -35,6 +36,11 @@ const styles = theme => ({
 
 function Dashboard(props) {
 	const { classes } = props
+	const [user, setUser] = useState(null)
+
+	useEffect(() => {
+		firebase.getUser().then(setUser);
+	}, []);
 
 	if(!firebase.getCurrentUsername()) {
 		// not logged in
@@ -43,12 +49,6 @@ function Dashboard(props) {
 		return null
 	}
 
-	const [quote, setQuote] = useState('')
-
-	useEffect(() => {
-		firebase.getCurrentUserQuote().then(setQuote)
-	})
-
 	return (
 		<main className={classes.main}>
 			<Paper className={classes.paper}>
@@ -56,10 +56,10 @@ function Dashboard(props) {
 					<VerifiedUserOutlined />
 				</Avatar>
 				<Typography component="h1" variant="h5">
-					Hello { firebase.getCurrentUsername() }
+					Hello { user && user.username }
 				</Typography>
 				<Typography component="h1" variant="h5">
-					Your quote: {quote ? `"${quote}"` : <CircularProgress size={20} />}
+					Your Gender: {user ? `"${user.gender}"` : <CircularProgress size={20} />}
 				</Typography>
 				<Button
 					type="submit"
