@@ -5,9 +5,9 @@ import 'firebase/firebase-firestore'
 const config = {
 	apiKey: "AIzaSyBQUbSmCbR4jJKA9HD2UttIZL542EK6fAE",
 	authDomain: "musiclife-56317.firebaseapp.com",
-	databaseURL: "https://codedamn-socialapp.firebaseio.com",
+	databaseURL: "https://musiclife-56317-default-rtdb.europe-west1.firebasedatabase.app",
 	projectId: "musiclife-56317",
-	storageBucket: "codedamn-socialapp.appspot.com",
+	storageBucket: "musiclife-56317.appspot.com",
 	measurementId: "G-BYNKLEYZ48"
 }
 
