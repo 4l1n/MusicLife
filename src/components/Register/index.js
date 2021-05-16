@@ -4,6 +4,8 @@ import LockOutlinedIcon from '@material-ui/icons/LockOutlined'
 import withStyles from '@material-ui/core/styles/withStyles'
 import { Link, withRouter } from 'react-router-dom'
 import firebase from '../firebase'
+import Select from "@material-ui/core/Select";
+import MenuItem from "@material-ui/core/MenuItem";
 const styles = theme => ({
 	main: {
 		width: 'auto',
@@ -34,6 +36,9 @@ const styles = theme => ({
 	submit: {
 		marginTop: theme.spacing.unit * 3,
 	},
+	gender: {
+		width: '100%'
+	}
 })
 
 function Register(props) {
@@ -42,7 +47,11 @@ function Register(props) {
 	const [name, setName] = useState('')
 	const [email, setEmail] = useState('')
 	const [password, setPassword] = useState('')
-	const [quote, setQuote] = useState('')
+	const [gender, setGender] = useState('');
+
+	const handleChange = (event) => {
+		setGender(event.target.value);
+	};
 
 	return (
 		<main className={classes.main}>
@@ -66,9 +75,17 @@ function Register(props) {
 						<InputLabel htmlFor="password">Password</InputLabel>
 						<Input name="password" type="password" id="password" autoComplete="off" value={password} onChange={e => setPassword(e.target.value)}  />
 					</FormControl>
-					<FormControl margin="normal" required fullWidth>
-						<InputLabel htmlFor="quote">Your Favorite Quote</InputLabel>
-						<Input name="quote" type="text" id="quote" autoComplete="off" value={quote} onChange={e => setQuote(e.target.value)}  />
+					<FormControl className={classes.gender}>
+						<InputLabel id="demo-simple-select-label">Gender</InputLabel>
+						<Select
+							labelId="demo-simple-select-label"
+							id="demo-simple-select"
+							value={gender}
+							onChange={handleChange}
+						>
+							<MenuItem value={'male'}>Male</MenuItem>
+							<MenuItem value={'female'}>Female</MenuItem>
+						</Select>
 					</FormControl>
 
 					<Button
@@ -98,8 +115,7 @@ function Register(props) {
 
 	async function onRegister() {
 		try {
-			await firebase.register(name, email, password)
-			await firebase.addQuote(quote)
+			await firebase.register(name, email, password, gender)
 			props.history.replace('/dashboard')
 		} catch(error) {
 			alert(error.message)

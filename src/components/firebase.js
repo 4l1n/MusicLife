@@ -3,12 +3,12 @@ import 'firebase/auth'
 import 'firebase/firebase-firestore'
 
 const config = {
-	apiKey: "AIzaSyAk0794OsQuDuoEdUfF9nUM_zD17lfRXEE",
-	authDomain: "codedamn-socialapp.firebaseapp.com",
+	apiKey: "AIzaSyBQUbSmCbR4jJKA9HD2UttIZL542EK6fAE",
+	authDomain: "musiclife-56317.firebaseapp.com",
 	databaseURL: "https://codedamn-socialapp.firebaseio.com",
-	projectId: "codedamn-socialapp",
+	projectId: "musiclife-56317",
 	storageBucket: "codedamn-socialapp.appspot.com",
-	messagingSenderId: "263473733320"
+	measurementId: "G-BYNKLEYZ48"
 }
 
 class Firebase {
@@ -26,20 +26,24 @@ class Firebase {
 		return this.auth.signOut()
 	}
 
-	async register(name, email, password) {
+	async register(name, email, password, gender) {
 		await this.auth.createUserWithEmailAndPassword(email, password)
+		await this.db.collection("usuarios")
+			.add({
+				gender: gender,
+			})
 		return this.auth.currentUser.updateProfile({
 			displayName: name
 		})
 	}
 
-	addQuote(quote) {
+	addGender(gender) {
 		if(!this.auth.currentUser) {
 			return alert('Not authorized')
 		}
 
-		return this.db.doc(`users_codedamn_video/${this.auth.currentUser.uid}`).set({
-			quote
+		return this.db.doc(`usuarios/${this.auth.currentUser.uid}`).set({
+			gender
 		})
 	}
 
