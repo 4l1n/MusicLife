@@ -4,7 +4,7 @@ import VerifiedUserOutlined from '@material-ui/icons/VerifiedUserOutlined'
 import withStyles from '@material-ui/core/styles/withStyles'
 import firebase from '../firebase'
 import { withRouter } from 'react-router-dom'
-import Snackbar from "@material-ui/core/Snackbar";
+import Stream from "./Stream";
 
 const styles = theme => ({
 	main: {
@@ -35,8 +35,8 @@ const styles = theme => ({
 })
 
 function Dashboard(props) {
-	const { classes } = props
-	const [user, setUser] = useState(null)
+	const { classes } = props;
+	const [user, setUser] = useState(null);
 
 	useEffect(() => {
 		firebase.getUser().then(setUser);
@@ -44,9 +44,9 @@ function Dashboard(props) {
 
 	if(!firebase.getCurrentUsername()) {
 		// not logged in
-		alert('Please login first')
-		props.history.replace('/login')
-		return null
+		alert('Please login first');
+		props.history.replace('/login');
+		return null;
 	}
 
 	return (
@@ -55,6 +55,9 @@ function Dashboard(props) {
 				<Avatar className={classes.avatar}>
 					<VerifiedUserOutlined />
 				</Avatar>
+
+				<Stream />
+
 				<Typography component="h1" variant="h5">
 					Hello { user && user.username }
 				</Typography>
