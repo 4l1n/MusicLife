@@ -99,7 +99,7 @@ const Stream = (prop) => {
                     setfoundexp(exp)
                 }
 
-            }, 1000 / 10)
+            }, 30000)
         })
 
     }

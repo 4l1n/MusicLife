@@ -1,7 +1,7 @@
 {
   "hosting": {
     "site": "musiclife-alin",
-    "public": "build/",
+    "public": "build",
     "ignore": [
       "firebase.json",
       "**/.*",
