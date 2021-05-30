@@ -6,6 +6,9 @@ import { Link, withRouter } from 'react-router-dom'
 import firebase from '../firebase'
 import Select from "@material-ui/core/Select";
 import MenuItem from "@material-ui/core/MenuItem";
+import {Formik} from "formik";
+import Snackbar from "@material-ui/core/Snackbar";
+import Alert from "@material-ui/lab/Alert";
 const styles = theme => ({
 	main: {
 		width: 'auto',
@@ -38,19 +41,25 @@ const styles = theme => ({
 	},
 	gender: {
 		width: '100%'
+	},
+	input: {
+		width: '100%',
+		marginTop: 10
 	}
 })
 
 function Register(props) {
 	const { classes } = props
 
-	const [name, setName] = useState('')
-	const [email, setEmail] = useState('')
-	const [password, setPassword] = useState('')
-	const [gender, setGender] = useState('');
+	const [open, setOpen] = React.useState(false);
+	const [message, setErrorMessage] = React.useState('');
 
-	const handleChange = (event) => {
-		setGender(event.target.value);
+	const handleClose = (event, reason) => {
+		if (reason === 'clickaway') {
+			return;
+		}
+
+		setOpen(false);
 	};
 
 	return (
@@ -62,63 +71,122 @@ function Register(props) {
 				<Typography component="h1" variant="h5">
 					Register Account
        			</Typography>
-				<form className={classes.form} onSubmit={e => e.preventDefault() && false }>
-					<FormControl margin="normal" required fullWidth>
-						<InputLabel htmlFor="name">Name</InputLabel>
-						<Input id="name" name="name" autoComplete="off" autoFocus value={name} onChange={e => setName(e.target.value)} />
-					</FormControl>
-					<FormControl margin="normal" required fullWidth>
-						<InputLabel htmlFor="email">Email Address</InputLabel>
-						<Input id="email" name="email" autoComplete="off" value={email} onChange={e => setEmail(e.target.value)}  />
-					</FormControl>
-					<FormControl margin="normal" required fullWidth>
-						<InputLabel htmlFor="password">Password</InputLabel>
-						<Input name="password" type="password" id="password" autoComplete="off" value={password} onChange={e => setPassword(e.target.value)}  />
-					</FormControl>
-					<FormControl className={classes.gender}>
-						<InputLabel id="demo-simple-select-label">Gender</InputLabel>
-						<Select
-							labelId="demo-simple-select-label"
-							id="demo-simple-select"
-							value={gender}
-							onChange={handleChange}
-						>
-							<MenuItem value={'male'}>Male</MenuItem>
-							<MenuItem value={'female'}>Female</MenuItem>
-						</Select>
-					</FormControl>
+				<Formik
+					initialValues={{ name: '', email: '', password: '', gender: '' }}
+					validate={values => {
+						const errors = {};
 
-					<Button
-						type="submit"
-						fullWidth
-						variant="contained"
-						color="primary"
-						onClick={onRegister}
-						className={classes.submit}>
-						Register
-          			</Button>
+						if (!values.name) {
+							errors.name = 'Name is required'
+						}
 
-					<Button
-						type="submit"
-						fullWidth
-						variant="contained"
-						color="secondary"
-						component={Link}
-						to="/login"
-						className={classes.submit}>
-						Go back to Login
-          			</Button>
-				</form>
+						if (!values.password) {
+							errors.password = 'Password is required'
+						}
+
+						if (!values.gender) {
+							errors.gender = 'Gender is required'
+						}
+
+						if (!values.email) {
+							errors.email = 'Email is required';
+						} else if (
+							!/^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i.test(values.email)
+						) {
+							errors.email = 'Invalid email address';
+						}
+
+						return errors;
+					}}
+					onSubmit={(values, { setSubmitting }) => {
+						setTimeout(() => {
+							onRegister(values.name, values.email, values.password, values.gender)
+								.finally(() => setSubmitting(false));
+						}, 400);
+					}}
+				>
+					{({
+						  values,
+						  errors,
+						  touched,
+						  handleChange,
+						  handleSubmit,
+						  isSubmitting,
+					  }) => (
+						<form onSubmit={handleSubmit} style={{width: '100%'}}>
+							<Input id="name" name="name" placeholder={'Name'} autoComplete="off" value={values.name} onChange={handleChange} className={classes.input}  />
+							<Typography color={'error'}>
+								{errors.name && touched.name && errors.name}
+							</Typography>
+
+							<Input id="email" name="email" placeholder={'Email'} autoComplete="off" value={values.email} onChange={handleChange} className={classes.input} />
+							<Typography color={'error'}>
+								{errors.email && touched.email && errors.email}
+							</Typography>
+
+							<Input id="password" name="password" placeholder={'Password'} autoComplete="off" type={'password'} value={values.password} onChange={handleChange} className={classes.input} />
+							<Typography color={'error'}>
+								{errors.password && touched.password && errors.password}
+							</Typography>
+
+							<InputLabel id="demo-simple-select-label" style={{marginTop: 16}}>Gender</InputLabel>
+							<Select
+								labelId="demo-simple-select-label"
+								id="demo-simple-select"
+								name={'gender'}
+								placeholder={'Gender'}
+								value={values.gender}
+								className={classes.input}
+								onChange={handleChange}
+							>
+								<MenuItem value={'male'}>Male</MenuItem>
+								<MenuItem value={'female'}>Female</MenuItem>
+							</Select>
+
+							<Typography color={'error'}>
+								{errors.gender && touched.gender && errors.gender}
+							</Typography>
+
+							<Button
+								type="submit"
+								fullWidth
+								variant="contained"
+								color="primary"
+								disabled={isSubmitting}
+								className={classes.submit}>
+								Register
+							</Button>
+
+							<Button
+								type="submit"
+								fullWidth
+								variant="contained"
+								color="secondary"
+								component={Link}
+								to="/login"
+								className={classes.submit}>
+								Go back to Login
+							</Button>
+						</form>
+					)}
+				</Formik>
+
+				<Snackbar open={open} autoHideDuration={5000} onClose={handleClose}>
+					<Alert onClose={handleClose} severity="error">
+						{message}
+					</Alert>
+				</Snackbar>
 			</Paper>
 		</main>
 	)
 
-	async function onRegister() {
+	async function onRegister(name, email, password, gender) {
 		try {
-			await firebase.register(name, email, password, gender)
-			props.history.replace('/dashboard')
+			await firebase.register(name, email, password, gender);
+			props.history.replace('/dashboard');
 		} catch(error) {
-			alert(error.message)
+			setOpen(true);
+			setErrorMessage(error.message);
 		}
 	}
 }

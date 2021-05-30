@@ -1,9 +1,12 @@
-import React, { useState } from 'react'
-import { Typography, Paper, Avatar, Button, FormControl, Input, InputLabel } from '@material-ui/core'
+import React from 'react'
+import { Typography, Paper, Avatar, Button, Input } from '@material-ui/core'
 import LockOutlinedIcon from '@material-ui/icons/LockOutlined'
 import withStyles from '@material-ui/core/styles/withStyles'
 import { Link, withRouter } from 'react-router-dom'
 import firebase from '../firebase'
+import {Formik} from "formik";
+import Alert from "@material-ui/lab/Alert";
+import Snackbar from "@material-ui/core/Snackbar";
 
 const styles = theme => ({
 	main: {
@@ -35,13 +38,25 @@ const styles = theme => ({
 	submit: {
 		marginTop: theme.spacing.unit * 3,
 	},
+	input: {
+		marginTop: 10,
+		width: '100%'
+	}
 });
 
 function SignIn(props) {
 	const { classes } = props
 
-	const [email, setEmail] = useState('')
-	const [password, setPassword] = useState('')
+	const [open, setOpen] = React.useState(false);
+	const [message, setErrorMessage] = React.useState('');
+
+	const handleClose = (event, reason) => {
+		if (reason === 'clickaway') {
+			return;
+		}
+
+		setOpen(false);
+	};
 
 	return (
 		<main className={classes.main}>
@@ -52,45 +67,90 @@ function SignIn(props) {
 				<Typography component="h1" variant="h5">
 					Sign in
        			</Typography>
-				<form className={classes.form} onSubmit={e => e.preventDefault() && false}>
-					<FormControl margin="normal" required fullWidth>
-						<InputLabel htmlFor="email">Email Address</InputLabel>
-						<Input id="email" name="email" autoComplete="off" autoFocus value={email} onChange={e => setEmail(e.target.value)} />
-					</FormControl>
-					<FormControl margin="normal" required fullWidth>
-						<InputLabel htmlFor="password">Password</InputLabel>
-						<Input name="password" type="password" id="password" autoComplete="off" value={password} onChange={e => setPassword(e.target.value)} />
-					</FormControl>
-					<Button
-						type="submit"
-						fullWidth
-						variant="contained"
-						color="primary"
-						onClick={login}
-						className={classes.submit}>
-						Sign in
-          			</Button>
-					<Button
-						type="submit"
-						fullWidth
-						variant="contained"
-						color="secondary"
-						component={Link}
-						to="/register"
-						className={classes.submit}>
-						Register
-          			</Button>
-				</form>
+				<Formik
+					initialValues={{ email: '', password: ''}}
+					validate={values => {
+						const errors = {};
+
+						if (!values.password) {
+							errors.password = 'Password is required'
+						}
+
+						if (!values.email) {
+							errors.email = 'Email is required';
+						} else if (
+							!/^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i.test(values.email)
+						) {
+							errors.email = 'Invalid email address';
+						}
+
+						return errors;
+					}}
+					onSubmit={(values, { setSubmitting }) => {
+						setTimeout(() => {
+							login(values.email, values.password)
+								.finally(() => setSubmitting(false));
+						}, 400);
+					}}
+				>
+					{({
+						  values,
+						  errors,
+						  touched,
+						  handleChange,
+						  handleSubmit,
+						  isSubmitting,
+					  }) => (
+						<form onSubmit={handleSubmit} style={{width: '100%'}}>
+							<Input id="email" name="email" placeholder={'Email'} autoComplete="off" value={values.email} onChange={handleChange} className={classes.input} />
+							<Typography color={'error'}>
+								{errors.email && touched.email && errors.email}
+							</Typography>
+
+							<Input id="password" name="password" placeholder={'Password'} autoComplete="off" type={'password'} value={values.password} onChange={handleChange} className={classes.input} />
+							<Typography color={'error'}>
+								{errors.password && touched.password && errors.password}
+							</Typography>
+
+							<Button
+								type="submit"
+								fullWidth
+								variant="contained"
+								color="primary"
+								disabled={isSubmitting}
+								className={classes.submit}>
+								Sign in
+							</Button>
+							<Button
+								type="submit"
+								fullWidth
+								variant="contained"
+								color="secondary"
+								component={Link}
+								to="/register"
+								className={classes.submit}>
+								Register
+							</Button>
+						</form>
+					)}
+				</Formik>
+
+				<Snackbar open={open} autoHideDuration={5000} onClose={handleClose}>
+					<Alert onClose={handleClose} severity="error">
+						{message}
+					</Alert>
+				</Snackbar>
 			</Paper>
 		</main>
 	)
 
-	async function login() {
+	async function login(email, password) {
 		try {
-			await firebase.login(email, password)
+			await firebase.login(email, password);
 			props.history.replace('/dashboard')
 		} catch(error) {
-			alert(error.message)
+			setOpen(true);
+			setErrorMessage(error.message);
 		}
 	}
 }

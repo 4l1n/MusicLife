@@ -32,7 +32,7 @@ class Firebase {
 				this.db.collection('usuarios').doc(cred.user.uid).set({
 					username: name,
 					email: email,
-					gender: gender
+					gender: gender,
 				})
 			});
 
@@ -53,6 +53,45 @@ class Firebase {
 
 	async getUser() {
 		return await this.auth.currentUser && this.db.collection('usuarios').doc(this.auth.currentUser.uid).get().then(data => data.data())
+	}
+
+	async saveSong(videoId, title, description, thumbnail) {
+		return await this.auth.currentUser && this.db.collection('usuarios').doc(this.auth.currentUser.uid).collection('songs').doc(videoId).set({
+			videoId: videoId,
+			title: title,
+			description: description,
+			thumbnail: thumbnail
+		})
+	}
+
+	async saveMetrics(videoId, title, expresion, timestamp) {
+		return await this.auth.currentUser && this.db.collection('usuarios').doc(this.auth.currentUser.uid).collection('metrics').doc(videoId).set({
+			videoId: videoId,
+			title: title,
+			expresion: expresion,
+			timestamp: timestamp
+		})
+	}
+
+	async getMetrics() {
+		const snapshot = this.auth.currentUser && await this.db.collection('usuarios').doc(this.auth.currentUser.uid).collection('metrics').get();
+
+		return snapshot ? snapshot.docs.map(doc => doc.data()) : [];
+	}
+
+	async getSongs() {
+		const snapshot = this.auth.currentUser && await this.db.collection('usuarios').doc(this.auth.currentUser.uid).collection('songs').get();
+
+
+		return snapshot ? snapshot.docs.map(doc => doc.data()) : [];
+	}
+
+	async setNameGender(name, gender) {
+		return await this.auth.currentUser && this.db.collection('usuarios').doc(this.auth.currentUser.uid).set({
+			email: this.auth.currentUser.email,
+			username: name,
+			gender: gender
+		})
 	}
 }
 
