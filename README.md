@@ -1,8 +1,12 @@
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
 
-## Available Scripts
+## Previous requirements
+https://nodejs.org/es/
 
-In the project directory, you can run:
+## Order to run in localhost
+
+### `npm install`
+Installs all the dependencies needed to run this project.
 
 ### `npm start`
 
